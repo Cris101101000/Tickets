@@ -11,15 +11,21 @@ const ticketSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'in progress', 'closed'],
-    default: 'open',
+    enum: ['Abierto', 'En Progreso', 'Cerrado'],
+    default: 'Abierto',
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  priority: {
+    type: String,
+    enum: ['Baja', 'Media', 'Alta'],
+    default: 'Media',
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+}, {
+  timestamps: true,
 });
 
-const Ticket = mongoose.model('Ticket', ticketSchema);
-
-module.exports = Ticket;
+module.exports = mongoose.model('Ticket', ticketSchema);

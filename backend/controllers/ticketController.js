@@ -1,33 +1,65 @@
 const Ticket = require('../models/ticketModel');
 
-const getTickets = async (req, res) => {
-  const tickets = await Ticket.find();
-  res.json(tickets);
+// Obtener todos los tickets
+exports.getTickets = async (req, res) => {
+  try {
+    const tickets = await Ticket.find({ createdBy: req.user._id });
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener tickets' });
+  }
 };
 
-const createTicket = async (req, res) => {
-  const { title, description } = req.body;
-  const ticket = new Ticket({ title, description });
-  await ticket.save();
-  res.status(201).json(ticket);
+// Crear un nuevo ticket
+exports.createTicket = async (req, res) => {
+  try {
+    const newTicket = new Ticket({
+      ...req.body,
+      createdBy: req.user._id,
+    });
+    const savedTicket = await newTicket.save();
+    res.status(201).json(savedTicket);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear ticket' });
+  }
 };
 
-const updateTicket = async (req, res) => {
-  const { id } = req.params;
-  const { title, description, status } = req.body;
-  const ticket = await Ticket.findByIdAndUpdate(id, { title, description, status }, { new: true });
-  res.json(ticket);
+// Implementa las funciones para actualizar y eliminar tickets
+exports.updateTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket no encontrado' });
+    }
+
+    if (ticket.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Usuario no autorizado' });
+    }
+
+    const updatedTicket = await Ticket.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedTicket);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar ticket' });
+  }
 };
 
-const deleteTicket = async (req, res) => {
-  const { id } = req.params;
-  await Ticket.findByIdAndDelete(id);
-  res.status(204).end();
+exports.deleteTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket no encontrado' });
+    }
+
+    if (ticket.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Usuario no autorizado' });
+    }
+
+    await ticket.remove();
+    res.json({ message: 'Ticket eliminado' });
+  } catch (error) {
+    res.status(400).json({ message: 'Error al eliminar ticket' });
+  }
 };
 
-module.exports = {
-  getTickets,
-  createTicket,
-  updateTicket,
-  deleteTicket,
-};
