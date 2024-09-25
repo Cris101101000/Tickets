@@ -10,15 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión a MongoDB (asegúrate de tener MongoDB instalado y corriendo)
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Conectado a MongoDB'))
-.catch((err) => console.error('Error de conexión a MongoDB:', err));
+// Conectar a MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Conectado a MongoDB'))
+  .catch((err) => console.error('Error de conexión a MongoDB:', err));
 
-// Importa y usa las rutas
+// Rutas
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 

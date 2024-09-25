@@ -1,47 +1,60 @@
 import React, { useState } from 'react';
-import api from '../utils/api';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import './Login.css'; // Asegúrate de crear este archivo
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/auth/login', formData);
+      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       localStorage.setItem('token', response.data.token);
-      // Aquí puedes manejar el éxito del login, como redirigir al usuario
+      navigate('/dashboard');
     } catch (error) {
-      console.error('Error en el login:', error.response.data);
+      console.error('Error de inicio de sesión:', error.response.data);
+      // Aquí podrías mostrar un mensaje de error al usuario
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="Email"
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="Contraseña"
-        required
-      />
-      <button type="submit">Iniciar sesión</button>
-    </form>
+    <div className="login-page">
+      <div className="login-box">
+        <h2>Iniciar Sesión</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="user-box">
+            <input
+              type="email"
+              name="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label>Email</label>
+          </div>
+          <div className="user-box">
+            <input
+              type="password"
+              name="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <label>Contraseña</label>
+          </div>
+          <button type="submit">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Iniciar Sesión
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
