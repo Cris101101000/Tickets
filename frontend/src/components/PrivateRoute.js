@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 import SuperAdminDashboard from './SuperAdminDashboard';
 import AdminDashboard from './AdminDashboard';
@@ -20,7 +20,7 @@ const PrivateRoute = () => {
             },
           };
           const { data } = await axios.get('http://localhost:5000/api/auth/me', config);
-          console.log('User data:', data); // Agrega este console.log
+          console.log('User data:', data);
           setUser(data);
         }
       } catch (error) {
@@ -47,22 +47,15 @@ const PrivateRoute = () => {
     return <Navigate to="/login" />;
   }
 
-  console.log('User role:', user.role); // Agrega este console.log
+  console.log('Rendering dashboard for role:', user.role);
 
-  return (
-    <Routes>
-      {user.role === 'superadmin' && (
-        <Route path="/dashboard" element={<SuperAdminDashboard user={user} handleLogout={handleLogout} />} />
-      )}
-      {user.role === 'admin' && (
-        <Route path="/dashboard" element={<AdminDashboard user={user} handleLogout={handleLogout} />} />
-      )}
-      {(user.role === 'user' || !user.role) && (
-        <Route path="/dashboard" element={<UserDashboard user={user} handleLogout={handleLogout} />} />
-      )}
-      <Route path="*" element={<Navigate to="/dashboard" />} />
-    </Routes>
-  );
+  if (user.role === 'superadmin') {
+    return <SuperAdminDashboard user={user} handleLogout={handleLogout} />;
+  } else if (user.role === 'admin') {
+    return <AdminDashboard user={user} handleLogout={handleLogout} />;
+  } else {
+    return <UserDashboard user={user} handleLogout={handleLogout} />;
+  }
 };
 
 export default PrivateRoute;

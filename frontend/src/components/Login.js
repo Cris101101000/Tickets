@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
 
 const Login = () => {
@@ -49,6 +49,11 @@ const Login = () => {
             Iniciar Sesión
           </Button>
         </form>
+        <Box mt={2}>
+          <Typography variant="body2">
+            ¿No tienes una cuenta? <Link to="/register">Regístrate aquí</Link>
+          </Typography>
+        </Box>
       </Box>
     </Container>
   );
