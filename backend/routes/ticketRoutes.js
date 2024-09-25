@@ -7,16 +7,17 @@ const {
   updateTicket, 
   deleteTicket 
 } = require('../controllers/ticketController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, authorize } = require('../middlewares/authMiddleware');
+const User = require('../models/userModel'); // Asegúrate de que esta ruta es correcta
 
-// Asegúrate de que todas estas funciones (getTickets, createTicket, etc.) estén definidas en ticketController.js
+// Asegúrate de que todas estas funciones estén definidas en tu ticketController
 router.route('/')
-  .get(protect, getTickets)
+  .get(protect, authorize('soporte', 'admin', 'superadmin'), getTickets)
   .post(protect, createTicket);
 
 router.route('/:id')
   .get(protect, getTicket)
   .put(protect, updateTicket)
-  .delete(protect, deleteTicket);
+  .delete(protect, authorize('soporte', 'admin', 'superadmin'), deleteTicket);
 
 module.exports = router;

@@ -1,60 +1,56 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Login.css'; // Asegúrate de crear este archivo
+import { useNavigate } from 'react-router-dom';
+import { Container, TextField, Button, Typography, Box } from '@mui/material';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
+      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (error) {
-      console.error('Error de inicio de sesión:', error.response.data);
-      // Aquí podrías mostrar un mensaje de error al usuario
+      setError('Error de inicio de sesión. Por favor, intenta de nuevo.');
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="login-box">
-        <h2>Iniciar Sesión</h2>
+    <Container maxWidth="sm">
+      <Box mt={5}>
+        <Typography variant="h4" gutterBottom>
+          Iniciar Sesión
+        </Typography>
+        {error && <Typography color="error">{error}</Typography>}
         <form onSubmit={handleSubmit}>
-          <div className="user-box">
-            <input
-              type="email"
-              name="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <label>Email</label>
-          </div>
-          <div className="user-box">
-            <input
-              type="password"
-              name="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <label>Contraseña</label>
-          </div>
-          <button type="submit">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Contraseña"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button type="submit" variant="contained" color="primary" fullWidth>
             Iniciar Sesión
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 };
 

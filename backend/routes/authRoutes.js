@@ -1,10 +1,17 @@
+console.log('Cargando rutas de autenticación...');
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getProfile } = require('../controllers/authController');
-const { protect } = require('../middlewares/authMiddleware');
+const { registerUser, loginUser, getUserProfile, updateUserRole } = require('../controllers/authController');
+const { protect } = require('../middlewares/authMiddleware'); // Asegúrate de que esta ruta sea correcta
+console.log('Controlador de autenticación cargado');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.get('/profile', protect, getProfile);
+
+// Ruta para obtener el perfil del usuario autenticado
+router.get('/me', protect, getUserProfile);
+
+// Ruta temporal para actualizar el rol del usuario
+router.put('/update-role', updateUserRole);
 
 module.exports = router;

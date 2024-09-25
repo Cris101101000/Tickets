@@ -44,3 +44,17 @@ body {
   button:hover {
     background-color: #0056b3;
   }
+  
+  .form-group.checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group.checkbox input {
+    margin-right: 0.5rem;
+  }
+  
+  .form-group.checkbox label {
+    margin-bottom: 0;
+  }
