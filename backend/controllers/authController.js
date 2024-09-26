@@ -1,5 +1,6 @@
 console.log('Cargando controlador de autenticación...');
 const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
 const generateToken = require('../utils/generateToken');
 
 exports.registerUser = async (req, res) => {
@@ -41,24 +42,31 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-exports.loginUser = async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    // Buscar el usuario
     const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: 'Credenciales inválidas' });
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ message: 'Credenciales inválidas' });
     }
+
+    // Generar token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error del servidor', error: error.message });
+    console.error('Error en login:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
   }
 };
 

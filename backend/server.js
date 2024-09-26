@@ -9,6 +9,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes'); // Mantén solo esta declaración
 const ticketRoutes = require('./routes/ticketRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 dotenv.config();
 
@@ -101,3 +102,6 @@ app.use((err, req, res, next) => {
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+// Ruta para crear usuarios
+app.use('/api/users', userRoutes);
