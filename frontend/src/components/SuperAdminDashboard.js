@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Typography, Button, AppBar, Toolbar, Box, 
-  Drawer, List, ListItem, ListItemIcon, ListItemText 
-} from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, Button, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -15,42 +11,19 @@ import SystemConfiguration from './superadmin/SystemConfiguration';
 import Reports from './superadmin/Reports';
 import SecuritySettings from './superadmin/SecuritySettings';
 
-const SuperAdminDashboard = ({ user }) => {
-  const navigate = useNavigate();
-  const [currentSection, setCurrentSection] = useState('users');
-
-  const handleLogout = () => {
-    // Eliminar el token del almacenamiento local
-    localStorage.removeItem('token');
-    // Redirigir al usuario a la página de inicio de sesión
-    navigate('/login');
-  };
-
-  const renderSection = () => {
-    switch(currentSection) {
-      case 'users':
-        return <UserManagement />;
-      case 'tickets':
-        return <TicketManagement />;
-      case 'config':
-        return <SystemConfiguration />;
-      case 'reports':
-        return <Reports />;
-      case 'security':
-        return <SecuritySettings />;
-      default:
-        return <Typography>Selecciona una sección</Typography>;
-    }
-  };
+const SuperAdminDashboard = ({ user, handleLogout }) => {
+  const [currentSection, setCurrentSection] = useState('UserManagement');
 
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Panel de Super Admin
+          <Typography variant="h6" noWrap component="div">
+            Super Admin Dashboard
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>Cerrar Sesión</Button>
+          <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
+            Cerrar Sesión
+          </Button>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -64,28 +37,46 @@ const SuperAdminDashboard = ({ user }) => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {[
-              { text: 'Usuarios', icon: <PeopleIcon />, section: 'users' },
-              { text: 'Tickets', icon: <ConfirmationNumberIcon />, section: 'tickets' },
-              { text: 'Sistema', icon: <SettingsIcon />, section: 'system' },
-              { text: 'Reportes', icon: <AssessmentIcon />, section: 'reports' },
-              { text: 'Seguridad', icon: <SecurityIcon />, section: 'security' }
-            ].map((item) => (
-              <ListItem button key={item.text} onClick={() => setCurrentSection(item.section)}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            ))}
+            <ListItem button onClick={() => setCurrentSection('UserManagement')}>
+              <ListItemIcon>
+                <PeopleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Gestión de Usuarios" />
+            </ListItem>
+            <ListItem button onClick={() => setCurrentSection('TicketManagement')}>
+              <ListItemIcon>
+                <ConfirmationNumberIcon />
+              </ListItemIcon>
+              <ListItemText primary="Gestión de Tickets" />
+            </ListItem>
+            <ListItem button onClick={() => setCurrentSection('SystemConfiguration')}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Configuración del Sistema" />
+            </ListItem>
+            <ListItem button onClick={() => setCurrentSection('Reports')}>
+              <ListItemIcon>
+                <AssessmentIcon />
+              </ListItemIcon>
+              <ListItemText primary="Reportes" />
+            </ListItem>
+            <ListItem button onClick={() => setCurrentSection('SecuritySettings')}>
+              <ListItemIcon>
+                <SecurityIcon />
+              </ListItemIcon>
+              <ListItemText primary="Configuración de Seguridad" />
+            </ListItem>
           </List>
         </Box>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        {currentSection === 'users' && <UserManagement />}
-        {currentSection === 'tickets' && <TicketManagement />}
-        {currentSection === 'system' && <SystemConfiguration />}
-        {currentSection === 'reports' && <Reports />}
-        {currentSection === 'security' && <SecuritySettings />}
+        {currentSection === 'UserManagement' && <UserManagement />}
+        {currentSection === 'TicketManagement' && <TicketManagement />}
+        {currentSection === 'SystemConfiguration' && <SystemConfiguration />}
+        {currentSection === 'Reports' && <Reports />}
+        {currentSection === 'SecuritySettings' && <SecuritySettings />}
       </Box>
     </Box>
   );

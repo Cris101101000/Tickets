@@ -2,27 +2,20 @@ const Ticket = require('../models/ticketModel');
 
 // Get all tickets
 exports.getTickets = async (req, res) => {
-  try {
-    const tickets = await Ticket.find().populate('createdBy', 'name email');
-    res.json(tickets);
-  } catch (error) {
-    res.status(400).json({ message: 'Error fetching tickets', error: error.message });
-  }
+  const tickets = await Ticket.find();
+  res.json(tickets);
 };
 
 // Create a new ticket
 exports.createTicket = async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const ticket = await Ticket.create({
-      title,
-      description,
-      createdBy: req.user._id,
-    });
-    res.status(201).json(ticket);
-  } catch (error) {
-    res.status(400).json({ message: 'Error creating ticket', error: error.message });
+  if (req.user.role !== 'superadmin') {
+    return res.status(403).json({ message: 'No autorizado' });
   }
+
+  const { title, description, status } = req.body;
+  const ticket = new Ticket({ title, description, status });
+  await ticket.save();
+  res.status(201).json(ticket);
 };
 
 // Get a single ticket

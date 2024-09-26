@@ -1,18 +1,12 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import SuperAdminDashboard from './components/SuperAdminDashboard';
-import Login from './components/Login';
+import React, { useState } from 'react';
+import AppContent from './components/AppContent';
 
-function App() {
+const App = () => {
+  const [user, setUser] = useState(null);
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<SuperAdminDashboard />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
+    <AppContent user={user} setUser={setUser} />
   );
-}
+};
 
 export default App;

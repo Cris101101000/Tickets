@@ -10,54 +10,32 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes'); // Mantén solo esta declaración
 const ticketRoutes = require('./routes/ticketRoutes');
 const userRoutes = require('./routes/userRoutes');
+const { protect } = require('./middlewares/authMiddleware');
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Ajusta esto según la URL de tu frontend
+  credentials: true,
+}));
+
 app.use(express.json());
 
 console.log('Intentando conectar a MongoDB...');
 console.log('MONGO_URI:', process.env.MONGO_URI);
 
 // Conectar a MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect('mongodb://localhost:27017/Tickets', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => {
-  console.log('Conectado exitosamente a MongoDB');
-  const PORT = process.env.PORT || 5000;
-  
-  const server = app.listen(PORT, () => {
-    const actualPort = server.address().port;
-    console.log(`Servidor corriendo en el puerto ${actualPort}`);
-  });
-
-  server.on('error', (error) => {
-    if (error.syscall !== 'listen') {
-      throw error;
-    }
-
-    switch (error.code) {
-      case 'EACCES':
-        console.error(`El puerto ${PORT} requiere privilegios elevados`);
-        process.exit(1);
-        break;
-      case 'EADDRINUSE':
-        console.error(`El puerto ${PORT} ya está en uso`);
-        console.log('Intentando con el siguiente puerto...');
-        server.listen(0); // Esto intentará con el siguiente puerto disponible
-        break;
-      default:
-        throw error;
-    }
-  });
+  console.log('Conectado a MongoDB');
 })
 .catch((err) => {
-  console.error('Error detallado de conexión a MongoDB:', err);
-  process.exit(1);
+  console.error('Error al conectar a MongoDB', err);
 });
 
 // Middleware para verificar la conexión a MongoDB antes de cada solicitud
@@ -79,7 +57,7 @@ app.use('/api/auth', authRoutes);
 console.log('Rutas de autenticación configuradas');
 
 // Rutas de tickets (añade otras rutas que necesites)
-app.use('/api/tickets', ticketRoutes);
+app.use('/api/tickets', protect, ticketRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -104,4 +82,9 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Ruta para crear usuarios
-app.use('/api/users', userRoutes);
+app.use('/api/users', protect, userRoutes);
+
+app.listen(5000, () => {
+  console.log('Servidor corriendo en el puerto 5000');
+});
+

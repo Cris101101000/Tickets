@@ -13,8 +13,10 @@ const SupportDashboard = ({ user, handleLogout }) => {
   const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    if (user) {
+      fetchTickets();
+    }
+  }, [user]);
 
   const fetchTickets = async () => {
     try {
@@ -59,6 +61,10 @@ const SupportDashboard = ({ user, handleLogout }) => {
       console.error('Error updating ticket:', error);
     }
   };
+
+  if (!user) {
+    return <div>Cargando datos del usuario...</div>;
+  }
 
   return (
     <Container>
