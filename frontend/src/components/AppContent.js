@@ -1,40 +1,44 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
-import Register from './Register';
-import SuperAdminDashboard from './SuperAdminDashboard';
-import AdminDashboard from './AdminDashboard';
-import UserDashboard from './UserDashboard';
+import Register from './Register'; // Asegúrate de importar el componente Register
+import Dashboard from './Dashboard';
 
-const AppContent = ({ user, setUser }) => {
-  const navigate = useNavigate();
+const AppContent = ({ user, setUser, isAuthenticated, setIsAuthenticated }) => {
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.get('http://localhost:5000/api/auth/me', {
+          headers: {
+            'x-auth-token': token
+          }
+        });
+        setUser(response.data);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Error en /api/auth/me:', error.response?.data || error.message);
+        setIsAuthenticated(false);
+        setUser(null);
+        localStorage.removeItem('token');
+      }
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      axios.get('http://localhost:5000/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }).then(response => {
-        setUser(response.data);
-      }).catch(() => {
-        navigate('/login');
-      });
-    } else {
-      navigate('/login');
-    }
-  }, [navigate, setUser]);
+    checkAuth();
+  }, []);
 
   return (
     <Routes>
-      <Route path="/login" element={<Login setUser={setUser} />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/super-admin-dashboard" element={user?.role === 'super admin' ? <SuperAdminDashboard user={user} /> : <Navigate to="/login" />} />
-      <Route path="/admin-dashboard" element={user?.role === 'admin' ? <AdminDashboard user={user} /> : <Navigate to="/login" />} />
-      <Route path="/user-dashboard" element={user?.role === 'usuario' ? <UserDashboard user={user} /> : <Navigate to="/login" />} />
-      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/login" element={!isAuthenticated ? <Login setUser={setUser} setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/dashboard" />} />
+      <Route path="/register" element={!isAuthenticated ? <Register setUser={setUser} setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/dashboard" />} />
+      <Route path="/dashboard" element={isAuthenticated ? <Dashboard user={user} /> : <Navigate to="/login" />} />
+      <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
     </Routes>
   );
 };

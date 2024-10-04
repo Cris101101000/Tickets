@@ -1,69 +1,80 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import './Login.css'; // Asegúrate de que esta ruta sea correcta
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+import api from '../services/api';
+import './Login.css'; // Asegúrate de que la ruta sea correcta
 
-const Login = ({ setUser }) => {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [name, setName] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      const userData = {
-        name: response.data.name,
-        email: response.data.email,
-        role: response.data.role
-      };
-
-      if (rememberMe) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(userData));
+      let response;
+      if (isLogin) {
+        response = await api.post('/auth/login', { email, password });
       } else {
-        sessionStorage.setItem('token', response.data.token);
-        sessionStorage.setItem('user', JSON.stringify(userData));
+        response = await api.post('/auth/register', { name, email, password });
       }
-
-      setUser(userData);
-
-      switch (userData.role) {
-        case 'super admin':
-          navigate('/super-admin-dashboard');
+      login(response.data.user);
+      // Redirige basado en el rol del usuario
+      switch(response.data.user.role) {
+        case 'superadmin':
+          navigate('/superadmin-dashboard');
           break;
         case 'admin':
           navigate('/admin-dashboard');
           break;
-        case 'usuario':
-          navigate('/user-dashboard');
+        case 'support':
+          navigate('/support-dashboard');
           break;
         default:
-          navigate('/login');
-          break;
+          navigate('/user-dashboard');
       }
     } catch (error) {
-      console.error('Error de inicio de sesión:', error.response?.data || error.message);
-      alert('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      console.error('Error:', error);
     }
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
-        <h2>Iniciar Sesión</h2>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
-        <div className="remember-me">
-          <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-          <label>Recuérdame</label>
-        </div>
-        <button type="submit">Login</button>
-        <p>¿No tienes una cuenta? <Link to="/register">Regístrate aquí</Link></p>
+    <div>
+      <h2>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
+      <form onSubmit={handleSubmit}>
+        {!isLogin && (
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nombre"
+            required={!isLogin}
+          />
+        )}
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          required
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Contraseña"
+          required
+        />
+        <button type="submit">{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</button>
       </form>
+      <button onClick={() => setIsLogin(!isLogin)}>
+        {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
+      </button>
     </div>
   );
-};
+}
 
 export default Login;

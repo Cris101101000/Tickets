@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Typography, Button, AppBar, Toolbar, Box, Paper } from '@mui/material';
 
 const UserDashboard = ({ user, handleLogout }) => {
-  console.log('UserDashboard rendered', user); // Agrega este console.log
+  console.log('UserDashboard rendered', user);
 
   if (!user) {
     return <div>Loading user data...</div>;

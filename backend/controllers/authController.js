@@ -1,32 +1,42 @@
 console.log('Cargando controlador de autenticación...');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const generateToken = require('../utils/generateToken');
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d', // Ajusta según tus necesidades
+  });
+};
 
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
+    
+    // Verificar si el usuario ya existe
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'El usuario ya existe' });
+    }
 
-  const userExists = await User.findOne({ email });
+    // Crear nuevo usuario
+    const user = await User.create({
+      name,
+      email,
+      password, // Asegúrate de hashear la contraseña antes de guardarla
+    });
 
-  if (userExists) {
-    return res.status(400).json({ message: 'El usuario ya existe' });
-  }
+    // Generar token
+    const token = generateToken(user._id);
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
-
-  if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      token,
     });
-  } else {
-    res.status(400).json({ message: 'Datos de usuario no válidos' });
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    res.status(400).json({ message: 'Error en el registro de usuario', error: error.message });
   }
 };
 

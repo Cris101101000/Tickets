@@ -27,16 +27,12 @@ console.log('Intentando conectar a MongoDB...');
 console.log('MONGO_URI:', process.env.MONGO_URI);
 
 // Conectar a MongoDB
-mongoose.connect('mongodb://localhost:27017/Tickets', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => {
-  console.log('Conectado a MongoDB');
-})
-.catch((err) => {
-  console.error('Error al conectar a MongoDB', err);
-});
+.then(() => console.log('Conexión a MongoDB establecida'))
+.catch(err => console.error('Error de conexión a MongoDB:', err));
 
 // Middleware para verificar la conexión a MongoDB antes de cada solicitud
 app.use((req, res, next) => {

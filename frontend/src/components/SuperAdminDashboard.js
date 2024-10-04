@@ -1,29 +1,53 @@
-import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, Button, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext'; // Importa useUser
+import { 
+  Box, 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemIcon, 
+  ListItemText 
+} from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SecurityIcon from '@mui/icons-material/Security';
-import UserManagement from './superadmin/UserManagement';
-import TicketManagement from './superadmin/TicketManagement';
-import SystemConfiguration from './superadmin/SystemConfiguration';
-import Reports from './superadmin/Reports';
-import SecuritySettings from './superadmin/SecuritySettings';
 
-const SuperAdminDashboard = ({ user, handleLogout }) => {
-  const [currentSection, setCurrentSection] = useState('UserManagement');
+const SuperAdminDashboard = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useUser(); // Usa el hook useUser
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Si el usuario no está autenticado o no es un superadmin, redirige al login
+  React.useEffect(() => {
+    if (!user || user.role !== 'superadmin') {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  // Si el usuario aún no se ha cargado, muestra un mensaje de carga
+  if (!user) {
+    return <div>Cargando...</div>;
+  }
 
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed">
         <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            Super Admin Dashboard
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            Panel de Super Admin
           </Typography>
-          <Button color="inherit" onClick={handleLogout} sx={{ marginLeft: 'auto' }}>
-            Cerrar Sesión
-          </Button>
+          <Button color="inherit" onClick={handleLogout}>Cerrar Sesión</Button>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -37,46 +61,27 @@ const SuperAdminDashboard = ({ user, handleLogout }) => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            <ListItem button onClick={() => setCurrentSection('UserManagement')}>
-              <ListItemIcon>
-                <PeopleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Gestión de Usuarios" />
-            </ListItem>
-            <ListItem button onClick={() => setCurrentSection('TicketManagement')}>
-              <ListItemIcon>
-                <ConfirmationNumberIcon />
-              </ListItemIcon>
-              <ListItemText primary="Gestión de Tickets" />
-            </ListItem>
-            <ListItem button onClick={() => setCurrentSection('SystemConfiguration')}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Configuración del Sistema" />
-            </ListItem>
-            <ListItem button onClick={() => setCurrentSection('Reports')}>
-              <ListItemIcon>
-                <AssessmentIcon />
-              </ListItemIcon>
-              <ListItemText primary="Reportes" />
-            </ListItem>
-            <ListItem button onClick={() => setCurrentSection('SecuritySettings')}>
-              <ListItemIcon>
-                <SecurityIcon />
-              </ListItemIcon>
-              <ListItemText primary="Configuración de Seguridad" />
-            </ListItem>
+            {[ 
+              { text: 'Gestión de Usuarios', icon: <PeopleIcon /> },
+              { text: 'Gestión de Tickets', icon: <ConfirmationNumberIcon /> },
+              { text: 'Configuración del Sistema', icon: <SettingsIcon /> },
+              { text: 'Reportes', icon: <AssessmentIcon /> },
+              { text: 'Configuración de Seguridad', icon: <SecurityIcon /> },
+            ].map((item, index) => (
+              <ListItem button key={item.text}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            ))}
           </List>
         </Box>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        {currentSection === 'UserManagement' && <UserManagement />}
-        {currentSection === 'TicketManagement' && <TicketManagement />}
-        {currentSection === 'SystemConfiguration' && <SystemConfiguration />}
-        {currentSection === 'Reports' && <Reports />}
-        {currentSection === 'SecuritySettings' && <SecuritySettings />}
+        <Typography paragraph>
+          Bienvenido, Super Admin {user.name}
+        </Typography>
+        {/* Aquí puedes agregar más contenido para el dashboard */}
       </Box>
     </Box>
   );
