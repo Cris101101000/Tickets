@@ -1,103 +1,34 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-  Container, Typography, Button, Box, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, Paper, Select, MenuItem
+  Container, Typography, Button, Box, Select, MenuItem
 } from '@mui/material';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Reports = () => {
   const [reportType, setReportType] = useState('ticketsByStatus');
-  const [reportData, setReportData] = useState(null);
+  const [data, setData] = useState([]); // Asegúrate de usar 'data' si es necesario
 
-  useEffect(() => {
-    fetchReportData();
-  }, [reportType, fetchReportData]);
-
-  const fetchReportData = useCallback(async () => {
+  const fetchReportData = async () => {
     try {
       const response = await axios.get(`/api/reports/${reportType}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setReportData(response.data);
+      setData(response.data);
     } catch (error) {
       console.error('Error fetching report data:', error);
     }
-  }, [reportType]);
+  };
+
+  useEffect(() => {
+    fetchReportData();
+  }, [reportType]); // Incluye solo 'reportType' si 'fetchReportData' no cambia
 
   const renderChart = () => {
-    if (!reportData) return null;
-
-    const chartData = {
-      labels: Object.keys(reportData),
-      datasets: [
-        {
-          label: 'Cantidad',
-          data: Object.values(reportData),
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        },
-      ],
-    };
-
-    const options = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        title: {
-          display: true,
-          text: getReportTitle(),
-        },
-      },
-    };
-
-    return <Bar data={chartData} options={options} />;
+    // Implementa la lógica para renderizar el gráfico
   };
 
   const renderTable = () => {
-    if (!reportData) return null;
-
-    return (
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{getReportTitle().split(' ')[0]}</TableCell>
-              <TableCell align="right">Cantidad</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.entries(reportData).map(([key, value]) => (
-              <TableRow key={key}>
-                <TableCell component="th" scope="row">
-                  {key}
-                </TableCell>
-                <TableCell align="right">{value}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  };
-
-  const getReportTitle = () => {
-    switch (reportType) {
-      case 'ticketsByStatus':
-        return 'Tickets por Estado';
-      case 'ticketsByPriority':
-        return 'Tickets por Prioridad';
-      case 'ticketsByUser':
-        return 'Tickets por Usuario';
-      case 'usersByRole':
-        return 'Usuarios por Rol';
-      default:
-        return 'Reporte';
-    }
+    // Implementa la lógica para renderizar la tabla
   };
 
   return (

@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import {
+  Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem
+} from '@mui/material';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState({ name: '', email: '', password: '', role: '' });
+  const navigate = useNavigate(); // Hook para la navegación
 
   useEffect(() => {
     fetchUsers();
@@ -13,8 +18,12 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
       const { data } = await axios.get('/api/users', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(data);
     } catch (error) {
@@ -22,13 +31,13 @@ const UserManagement = () => {
     }
   };
 
-  const handleOpen = (user) => {
+  const handleOpen = (user = { name: '', email: '', password: '', role: '' }) => {
     setCurrentUser(user);
     setOpen(true);
   };
 
   const handleClose = () => {
-    setCurrentUser(null);
+    setCurrentUser({ name: '', email: '', password: '', role: '' });
     setOpen(false);
   };
 
@@ -50,9 +59,9 @@ const UserManagement = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (userId) => {
     try {
-      await axios.delete(`/api/users/${id}`, {
+      await axios.delete(`/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchUsers();
@@ -63,10 +72,13 @@ const UserManagement = () => {
 
   return (
     <Container>
-      <Button variant="contained" color="primary" onClick={() => handleOpen({})}>
+      <Button variant="contained" color="primary" onClick={() => navigate('/')}>
+        Volver al Dashboard
+      </Button>
+      <Button variant="contained" color="primary" onClick={() => handleOpen()} style={{ marginLeft: '10px' }}>
         Crear Usuario
       </Button>
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} style={{ marginTop: '20px' }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -91,27 +103,42 @@ const UserManagement = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{currentUser?._id ? 'Editar Usuario' : 'Crear Usuario'}</DialogTitle>
+        <DialogTitle>{currentUser._id ? 'Editar Usuario' : 'Crear Usuario'}</DialogTitle>
         <DialogContent>
           <TextField
             label="Nombre"
-            value={currentUser?.name || ''}
+            value={currentUser.name}
             onChange={(e) => setCurrentUser({ ...currentUser, name: e.target.value })}
             fullWidth
           />
           <TextField
             label="Email"
-            value={currentUser?.email || ''}
+            value={currentUser.email}
             onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
             fullWidth
           />
-          <TextField
+          {!currentUser._id && (
+            <TextField
+              label="Contraseña"
+              type="password"
+              value={currentUser.password}
+              onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
+              fullWidth
+            />
+          )}
+          <Select
             label="Rol"
-            value={currentUser?.role || ''}
+            value={currentUser.role}
             onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value })}
             fullWidth
-          />
+          >
+            <MenuItem value="user">Usuario</MenuItem>
+            <MenuItem value="admin">Administrador</MenuItem>
+            <MenuItem value="superadmin">Super Administrador</MenuItem>
+            <MenuItem value="support">Soporte</MenuItem> {/* Agregar rol de soporte */}
+          </Select>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
