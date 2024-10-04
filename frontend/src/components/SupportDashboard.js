@@ -5,8 +5,10 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem
 } from '@mui/material';
+import { useUser } from '../contexts/UserContext';
 
-const SupportDashboard = ({ user, handleLogout }) => {
+const SupportDashboard = () => {
+  const { user, loading, logout } = useUser();
   const [tickets, setTickets] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -41,7 +43,6 @@ const SupportDashboard = ({ user, handleLogout }) => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedTicket(null);
-    setNewStatus('');
   };
 
   const handleUpdateTicket = async () => {
@@ -51,10 +52,7 @@ const SupportDashboard = ({ user, handleLogout }) => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       };
-      await axios.put(`http://localhost:5000/api/tickets/${selectedTicket._id}`, 
-        { status: newStatus },
-        config
-      );
+      await axios.put(`http://localhost:5000/api/tickets/${selectedTicket._id}`, { status: newStatus }, config);
       fetchTickets();
       handleCloseDialog();
     } catch (error) {
@@ -62,8 +60,12 @@ const SupportDashboard = ({ user, handleLogout }) => {
     }
   };
 
-  if (!user) {
+  if (loading) {
     return <div>Cargando datos del usuario...</div>;
+  }
+
+  if (!user) {
+    return <div>Error: Usuario no autenticado</div>;
   }
 
   return (
@@ -73,7 +75,7 @@ const SupportDashboard = ({ user, handleLogout }) => {
           <Typography variant="h6" style={{ flexGrow: 1 }}>
             Panel de Soporte
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>
+          <Button color="inherit" onClick={logout}>
             Cerrar Sesión
           </Button>
         </Toolbar>
@@ -98,7 +100,6 @@ const SupportDashboard = ({ user, handleLogout }) => {
                 <TableCell>Título</TableCell>
                 <TableCell>Descripción</TableCell>
                 <TableCell>Estado</TableCell>
-                <TableCell>Creado por</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -108,11 +109,8 @@ const SupportDashboard = ({ user, handleLogout }) => {
                   <TableCell>{ticket.title}</TableCell>
                   <TableCell>{ticket.description}</TableCell>
                   <TableCell>{ticket.status}</TableCell>
-                  <TableCell>{ticket.createdBy.name}</TableCell>
                   <TableCell>
-                    <Button variant="contained" color="primary" onClick={() => handleOpenDialog(ticket)}>
-                      Actualizar
-                    </Button>
+                    <Button onClick={() => handleOpenDialog(ticket)}>Editar</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -120,7 +118,6 @@ const SupportDashboard = ({ user, handleLogout }) => {
           </Table>
         </TableContainer>
       </Box>
-
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Actualizar Ticket</DialogTitle>
         <DialogContent>

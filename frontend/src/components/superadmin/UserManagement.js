@@ -1,68 +1,128 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Container, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [open, setOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-      try {
-        const response = await axios.get('http://localhost:5000/api/users', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Error fetching users:', error.response?.data || error.message);
-      }
-    };
-
     fetchUsers();
   }, []);
 
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
+  const fetchUsers = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/users', { name, email, password, role }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const { data } = await axios.get('/api/users', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setUsers([...users, response.data]);
-      setName('');
-      setEmail('');
-      setPassword('');
-      setRole('');
+      setUsers(data);
     } catch (error) {
-      console.error('Error creating user:', error.response?.data || error.message);
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const handleOpen = (user) => {
+    setCurrentUser(user);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setCurrentUser(null);
+    setOpen(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      if (currentUser._id) {
+        await axios.put(`/api/users/${currentUser._id}`, currentUser, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('/api/users', currentUser, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+      fetchUsers();
+      handleClose();
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/users/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
     }
   };
 
   return (
-    <div>
-      <h2>Gestión de Usuarios</h2>
-      <form onSubmit={handleCreateUser}>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" required />
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" required />
-        <input type="text" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Rol" required />
-        <button type="submit">Crear Usuario</button>
-      </form>
-      <ul>
-        {users.map(user => (
-          <li key={user._id}>{user.name}</li>
-        ))}
-      </ul>
-    </div>
+    <Container>
+      <Button variant="contained" color="primary" onClick={() => handleOpen({})}>
+        Crear Usuario
+      </Button>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Rol</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user._id}>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleOpen(user)}>Editar</Button>
+                  <Button onClick={() => handleDelete(user._id)}>Eliminar</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{currentUser?._id ? 'Editar Usuario' : 'Crear Usuario'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nombre"
+            value={currentUser?.name || ''}
+            onChange={(e) => setCurrentUser({ ...currentUser, name: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            value={currentUser?.email || ''}
+            onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Rol"
+            value={currentUser?.role || ''}
+            onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value })}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} color="primary">
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

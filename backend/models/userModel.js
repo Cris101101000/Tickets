@@ -17,8 +17,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['usuario', 'admin', 'soporte', 'super admin'],
-    default: 'usuario'
+    enum: ['superadmin', 'admin', 'support', 'user'], // Asegúrate de que 'user' esté incluido aquí
+    default: 'user'
   }
 });
 

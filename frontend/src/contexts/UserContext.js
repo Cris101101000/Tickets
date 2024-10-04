@@ -14,8 +14,10 @@ export const UserProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await api.get('/auth/me');
-          setUser(response.data);
+          const response = await api.get('/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUser(response.data.user);
         } catch (error) {
           console.error('Error fetching user:', error);
           localStorage.removeItem('token');

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Typography, Button, AppBar, Toolbar, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { useUser } from '../contexts/UserContext'; // Asegúrate de importar el contexto de usuario
 
-const AdminDashboard = ({ user, handleLogout }) => {
+const AdminDashboard = () => {
+  const { user, loading, logout } = useUser(); // Usar el contexto de usuario
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -20,8 +22,18 @@ const AdminDashboard = ({ user, handleLogout }) => {
       }
     };
 
-    fetchUsers();
-  }, []);
+    if (user) {
+      fetchUsers();
+    }
+  }, [user]);
+
+  if (loading) {
+    return <div>Cargando datos del usuario...</div>;
+  }
+
+  if (!user) {
+    return <div>Error: Usuario no autenticado</div>;
+  }
 
   return (
     <Container>
@@ -30,7 +42,7 @@ const AdminDashboard = ({ user, handleLogout }) => {
           <Typography variant="h6" style={{ flexGrow: 1 }}>
             Panel de Administrador
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>
+          <Button color="inherit" onClick={logout}>
             Cerrar Sesión
           </Button>
         </Toolbar>

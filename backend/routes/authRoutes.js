@@ -6,6 +6,7 @@ const { protect, authorize } = require('../middlewares/authMiddleware'); // Impo
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const generateToken = require('../utils/generateToken'); // Importa la función si está en otro archivo
 console.log('Controlador de autenticación cargado');
 
 router.post('/register', async (req, res) => {

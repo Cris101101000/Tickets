@@ -40,6 +40,14 @@ const SuperAdminDashboard = () => {
     return <div>Cargando...</div>;
   }
 
+  const menuItems = [
+    { text: 'Gestión de Usuarios', icon: <PeopleIcon />, path: '/user-management' },
+    { text: 'Gestión de Tickets', icon: <ConfirmationNumberIcon />, path: '/ticket-management' },
+    { text: 'Configuración del Sistema', icon: <SettingsIcon />, path: '/system-configuration' },
+    { text: 'Reportes', icon: <AssessmentIcon />, path: '/reports' },
+    { text: 'Configuración de Seguridad', icon: <SecurityIcon />, path: '/security-settings' },
+  ];
+
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed">
@@ -61,14 +69,8 @@ const SuperAdminDashboard = () => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {[ 
-              { text: 'Gestión de Usuarios', icon: <PeopleIcon /> },
-              { text: 'Gestión de Tickets', icon: <ConfirmationNumberIcon /> },
-              { text: 'Configuración del Sistema', icon: <SettingsIcon /> },
-              { text: 'Reportes', icon: <AssessmentIcon /> },
-              { text: 'Configuración de Seguridad', icon: <SecurityIcon /> },
-            ].map((item, index) => (
-              <ListItem button key={item.text}>
+            {menuItems.map((item) => (
+              <ListItem button key={item.text} onClick={() => navigate(item.path)}>
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
