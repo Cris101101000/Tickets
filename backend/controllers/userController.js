@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const User = require('../models/userModel'); // Cambia 'User' a 'userModel' si ese es el nombre del archivo
 
 // Función para crear un usuario
 exports.createUser = async (req, res) => {
@@ -14,8 +14,12 @@ exports.createUser = async (req, res) => {
 
 // Función para obtener todos los usuarios
 exports.getUsers = async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error });
+  }
 };
 
 // Función para actualizar un usuario, incluyendo asignar roles

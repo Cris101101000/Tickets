@@ -13,7 +13,13 @@ const UserManagement = () => {
   const navigate = useNavigate(); // Hook para la navegación
 
   useEffect(() => {
-    fetchUsers();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Redirigir al usuario a la página de inicio de sesión
+      navigate('/login');
+    } else {
+      fetchUsers();
+    }
   }, []);
 
   const fetchUsers = async () => {
